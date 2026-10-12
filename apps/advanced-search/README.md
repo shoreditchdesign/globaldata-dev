@@ -17,3 +17,5 @@ The dev server runs on http://localhost:3100.
 - `/[screen]`, one per screen in `src/flow/flow.ts`: `/start`, `/values`, `/manual`, `/picked`, `/results`, `/edit-filter`, `/resolving`, `/filters`
 
 Each screen is a state of the same prototype, so a deep link opens it at that point and the address follows the state from there.
+
+`SCREENS.md` lists every screen and in-between state in plain terms.
