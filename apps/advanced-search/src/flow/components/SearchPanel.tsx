@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils"
 /**
  * The results page's search panel. Quick search holds only the query field,
  * under the tabs. Advanced
- * search has no field here, only the Miller columns: the client read a field
- * on this page as an assistant to talk to, and the columns are the way in.
+ * search has no field here, only the Miller columns: a field on this
+ * page reads as an assistant to talk to, and the columns are the way in.
  * The tabs sit at the panel's top left on a row of their own over both
  * modes, so they never move when flipped, with the panel's close button at the
  * row's right end. All of it feeds the filter box above.

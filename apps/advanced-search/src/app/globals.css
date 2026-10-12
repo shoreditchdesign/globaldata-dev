@@ -170,7 +170,7 @@
    * ------------------------------------------------------------------
    * The accent — the GlobalData brand primary
    * ------------------------------------------------------------------
-   * `--brand` is a calmer derivative of the client's `#0034ec`, at the
+   * `--brand` is a calmer derivative of the GlobalData brand blue `#0034ec`, at the
    * same hue. The raw hex is `oklch(0.465 0.27 264)`, which sits on the
    * sRGB gamut wall: 0.27 is the most chroma this hue can hold at any
    * lightness. Used as a solid across four screens of dense data, that
@@ -373,8 +373,8 @@
    * ------------------------------------------------------------------
    * Motion
    * ------------------------------------------------------------------
-   * Lifted from Idea 3's resolve, which is the transition the client
-   * liked. The curve decelerates hard: things arrive rather than slide
+   * Lifted from Idea 3's resolve, the typed request resolving into filters.
+   * The curve decelerates hard: things arrive rather than slide
    * in. `lift` is its shorter sibling for a single element settling.
    * The timings that go with these live in
    * `src/components/prototype/motion.ts` so TypeScript can stagger

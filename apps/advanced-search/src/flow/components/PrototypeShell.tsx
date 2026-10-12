@@ -193,7 +193,7 @@ export function PrototypeShell() {
   }
   // Add filter, and a column's Edit filters, open the one place a filter is
   // built by hand: Advanced search's columns, in the panel, at the given path.
-  // Instant, with no walk — the client asked for this to be slick.
+  // Instant, with no walk.
   const openAdvancedAt = (
     trail: string[] | ((current: Sprint4Idea1cState) => string[]),
     hint = false,

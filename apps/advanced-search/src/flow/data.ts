@@ -7,8 +7,7 @@ import {
 export const activeProductArea: ProductArea = "Drugs"
 
 /**
- * The global nav's area tabs. Cut to the two the client asked to keep on the
- * 5 October call; the other six were placeholders for in-situ context and
+ * The global nav's area tabs. Cut to the two this search needs; the other six were placeholders for in-situ context and
  * read as features. The Miller columns still list every area.
  */
 export const navAreas: readonly ProductArea[] = ["Companies", "Drugs"]
@@ -16,7 +15,7 @@ export const navAreas: readonly ProductArea[] = ["Companies", "Drugs"]
 /**
  * The highest-level search areas, Drugs first and the rest in the platform's
  * order. Drugs is what this search is for, so it leads the list and opens by
- * default (the 5 October call).
+ * default.
  */
 export const searchCategories: readonly ProductArea[] = [
   "Drugs",

@@ -7,8 +7,7 @@ import * as React from "react"
  *
  * Lifted out of Idea 3's resolve — the transition where the typed request
  * lights up phrase by phrase, hardens into pills and dissolves into the
- * sentence. That was the one piece of motion the client singled out, and the
- * reason it works is not the effect, it is the timing: a short beat before
+ * sentence. The reason it works is not the effect, it is the timing: a short beat before
  * anything moves, a stagger small enough to read as one gesture rather than a
  * queue, and a curve that decelerates hard so things arrive rather than slide.
  *

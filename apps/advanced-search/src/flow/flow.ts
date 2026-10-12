@@ -10,7 +10,7 @@ export const flow: Flow = {
   id: "idea-1c",
   name: "1c) Pills",
   premise:
-    "Idea 1b, reworked after the 5 October client review into the version Sprint 5 tests: one place to build a filter by hand (Add filter and a column's Edit filters both open the Miller tray), Drugs first and open by default, a value tree the columns can drill, Excludes only in the filter bar, not the columns, and the query field back at the head of Quick search.",
+    "Idea 1b, reworked: one place to build a filter by hand (Add filter and a column's Edit filters both open the Miller tray), Drugs first and open by default, a value tree the columns can drill, Excludes only in the filter bar, not the columns, and the query field back at the head of Quick search.",
   lastUpdated: "2026-10-05",
   status: "in-progress",
   screens: [
