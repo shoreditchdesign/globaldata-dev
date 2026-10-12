@@ -29,8 +29,9 @@ blob-report/
 .idea/
 
 # Local docs (not for repo)
-docs/sprint-1/
-docs/sprint-2/
+docs/
+HANDOVER.md
+scratchpad.md
 slides/
 template/
 
