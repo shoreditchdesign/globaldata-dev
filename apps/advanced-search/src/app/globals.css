@@ -1,0 +1,430 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  /* Selected: a checked control, brand fill, white label. `bg-selected text-selected-foreground`. */
+  --color-selected: var(--selected);
+  --color-selected-foreground: var(--selected-foreground);
+  --color-selected-hover: var(--selected-hover);
+  /* Disabled: a flat grey, never a faded accent. */
+  --color-brand-disabled: var(--brand-disabled);
+  --color-brand-disabled-foreground: var(--brand-disabled-foreground);
+  --color-control-disabled-foreground: var(--control-disabled-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* ---- Surfaces. `bg-surface-page`, `bg-surface-panel`, … ---- */
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-page: var(--surface-page);
+  --color-surface-chrome: var(--surface-chrome);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-raised: var(--surface-raised);
+
+  /* ---- Rules. `border-hairline`, `border-border`, `border-edge`. ---- */
+  --color-hairline: var(--hairline);
+  --color-edge: var(--edge);
+
+  /* ---- The accent. `bg-brand`, `text-brand-ink`, `border-brand-border`, … ---- */
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-pressed: var(--brand-pressed);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-border: var(--brand-border);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-wash: var(--brand-wash);
+  --color-brand-foreground: var(--brand-foreground);
+
+  /* ---- Negation. An excluded value is not a selected one. ---- */
+  --color-negative: var(--negative);
+  --color-negative-ink: var(--negative-ink);
+  --color-negative-border: var(--negative-border);
+
+  /* ---- The development-stage ladder. See the note on `--stage-*` below. ---- */
+  --color-stage-pre: var(--stage-pre);
+  --color-stage-pre-ink: var(--stage-pre-ink);
+  --color-stage-pre-edge: var(--stage-pre-edge);
+  --color-stage-early: var(--stage-early);
+  --color-stage-early-ink: var(--stage-early-ink);
+  --color-stage-early-edge: var(--stage-early-edge);
+  --color-stage-mid: var(--stage-mid);
+  --color-stage-mid-ink: var(--stage-mid-ink);
+  --color-stage-mid-edge: var(--stage-mid-edge);
+  --color-stage-late: var(--stage-late);
+  --color-stage-late-ink: var(--stage-late-ink);
+  --color-stage-late-edge: var(--stage-late-edge);
+  --color-stage-final: var(--stage-final);
+  --color-stage-final-ink: var(--stage-final-ink);
+  --color-stage-final-edge: var(--stage-final-edge);
+  --color-stage-live: var(--stage-live);
+  --color-stage-live-ink: var(--stage-live-ink);
+  --color-stage-live-edge: var(--stage-live-edge);
+  --color-stage-stopped: var(--stage-stopped);
+  --color-stage-stopped-ink: var(--stage-stopped-ink);
+  --color-stage-stopped-edge: var(--stage-stopped-edge);
+  --color-stage-dormant: var(--stage-dormant);
+  --color-stage-dormant-ink: var(--stage-dormant-ink);
+  --color-stage-dormant-edge: var(--stage-dormant-edge);
+
+  /* ---- Motion. The vocabulary lifted out of Idea 3's resolve. ---- */
+  --ease-settle: var(--ease-settle-curve);
+  --ease-lift: var(--ease-lift-curve);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Prototypes are shadcn light mode only — no dark theme in this repo. */
+  color-scheme: light;
+
+  /*
+   * ------------------------------------------------------------------
+   * Surfaces
+   * ------------------------------------------------------------------
+   * Communicated as if this were a dark-mode UI and executed in light
+   * mode: the page is the ground everything else sits on, panels come
+   * forward off it, and a well is pushed back into it. Five steps, and
+   * they are the only backgrounds a screen should reach for.
+   *
+   *   sunken  — a well cut into a panel: inputs, empty states, a
+   *             segmented control's track, a disabled row.
+   *   page    — the application ground. Nothing sits at this level
+   *             except the gaps between panels.
+   *   chrome  — structure: the product header, area tabs, toolbars,
+   *             panel headers, side rails. Reads as fixed furniture.
+   *   panel   — the content plane. Tables, filter trees, the agent.
+   *   raised  — popovers, menus, dialogs and anything floating over a
+   *             panel. Same white as `panel`; the shadow does the work.
+   *
+   * All five carry a trace of the accent's hue so a blue selection sits
+   * on them without looking pasted on.
+   */
+  --surface-sunken: oklch(0.942 0.005 255);
+  --surface-page: oklch(0.966 0.004 255);
+  --surface-chrome: oklch(0.984 0.003 255);
+  --surface-panel: oklch(1 0 0);
+  --surface-raised: oklch(1 0 0);
+
+  --background: var(--surface-panel);
+  --foreground: oklch(0.17 0.008 260);
+  --card: var(--surface-panel);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--foreground);
+
+  /*
+   * ------------------------------------------------------------------
+   * Rules — three weights, because one was doing four jobs
+   * ------------------------------------------------------------------
+   *   hairline — inside a surface: row rules, a divider in a menu.
+   *   border   — the default edge of a control or a card.
+   *   edge     — structure between two surfaces: header to body, filter
+   *              panel to results, the outline of a raised panel.
+   */
+  --hairline: oklch(0.945 0.003 255);
+  --border: oklch(0.912 0.004 255);
+  --edge: oklch(0.868 0.005 255);
+  --input: var(--border);
+
+  /*
+   * ------------------------------------------------------------------
+   * The accent — the GlobalData brand primary
+   * ------------------------------------------------------------------
+   * `--brand` is a calmer derivative of the client's `#0034ec`, at the
+   * same hue. The raw hex is `oklch(0.465 0.27 264)`, which sits on the
+   * sRGB gamut wall: 0.27 is the most chroma this hue can hold at any
+   * lightness. Used as a solid across four screens of dense data, that
+   * much blue vibrated and pulled the eye to every button and chip. So
+   * the brand keeps its hue and gives up about a quarter of its chroma
+   * (0.27 → 0.205), and moves up a little in lightness (0.465 → 0.49) so
+   * it does not go navy. It renders as #2052d2, is still unmistakably the
+   * GlobalData blue, and white on it still clears 6.6:1.
+   *
+   * With headroom below the gamut wall now, every rung is derived from
+   * the brand by stepping lightness and scaling chroma together, so the
+   * whole ramp reads as one colour at different depths.
+   *
+   * It carries primary buttons, filter chips that are on, and links —
+   * nothing else. Checked controls (checkbox, radio, switch, progress)
+   * take `selected`, which is this same brand; selected options and
+   * toggles take the washed brand (`brand-tint` fill, `brand-border`
+   * edge) instead. Hovers are grey and focus is neutral. A strong accent
+   * means less of it.
+   *
+   *   brand          solid fills; white on it at 6.6:1
+   *   brand-strong   hover on a solid fill: one small step deeper
+   *                  (L −0.035, C −0.015), 7.6:1. Deeper, never paler, and
+   *                  small enough to read as a response rather than a
+   *                  different colour
+   *   brand-pressed  active/pressed: the same step again (L −0.07 from
+   *                  rest), 8.8:1
+   *   brand-ink      the accent as text or an icon on a light surface;
+   *                  7.8:1 on white, and calmer than the brand, which
+   *                  would make a coloured word look like a button
+   *   brand-border   the edge of a filter chip that is on
+   *   brand-tint     the fill of a filter chip that is on
+   *   brand-wash     the palest step, kept for the ramp
+   *
+   * `tint` and `wash` sit close to the gamut ceiling for a pale blue at
+   * 264, so the chips read as the brand by hue rather than intensity.
+   */
+  --brand: oklch(0.49 0.205 264);
+  --brand-strong: oklch(0.455 0.19 264);
+  --brand-pressed: oklch(0.42 0.175 264);
+  --brand-ink: oklch(0.445 0.15 264);
+  --brand-border: oklch(0.86 0.052 264);
+  --brand-tint: oklch(0.955 0.02 264);
+  --brand-wash: oklch(0.975 0.011 264);
+  --brand-foreground: oklch(0.99 0 0);
+
+  /*
+   * Disabled belongs to the brand, never a faded one and never a grey.
+   * `opacity-50` left a washed-out brand that still said "press me",
+   * and a neutral grey looked broken next to the blue. This is the brand
+   * pushed toward white with its chroma pulled right down: a pale blue
+   * that is plainly the same button, plainly asleep. The label is a
+   * dusty blue at 3.5:1 on the fill, so the word stays readable. The
+   * fill is 1.3:1 against white, just enough to hold the button's shape.
+   *
+   * Transparent variants (outline, ghost, secondary) keep their resting
+   * fill and drop the label to `control-disabled-foreground`, a neutral
+   * grey a step quieter than `muted-foreground`: 3.5:1 on white, 3.2:1
+   * on the page grey.
+   */
+  --brand-disabled: oklch(0.915 0.03 264);
+  --brand-disabled-foreground: oklch(0.57 0.08 264);
+  --control-disabled-foreground: oklch(0.63 0.01 258);
+
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  /* Focus is neutral, not the brand: a grey ring reads as focus without
+   * competing with the one blue a screen is allowed. */
+  --ring: oklch(0.708 0.008 258);
+
+  /*
+   * Selected — a checked or selected control (checkbox, radio, switch,
+   * progress fill) is brand solid with a white label, and `selected-hover`
+   * goes one step deeper. A selected option, toggle or segmented item takes
+   * washed brand instead: `bg-brand-tint border-brand-border
+   * text-foreground`. Black is never a fill; beside the blue it reads busy.
+   */
+  --selected: var(--brand);
+  --selected-foreground: var(--primary-foreground);
+  --selected-hover: var(--brand-strong);
+
+  --secondary: oklch(0.968 0.002 255);
+  --secondary-foreground: oklch(0.26 0.01 260);
+  --muted: oklch(0.968 0.002 255);
+  --muted-foreground: oklch(0.545 0.012 258);
+  --accent: oklch(0.962 0.003 255);
+  --accent-foreground: oklch(0.26 0.01 260);
+
+  --destructive: oklch(0.55 0.19 25);
+
+  /*
+   * ------------------------------------------------------------------
+   * Negation
+   * ------------------------------------------------------------------
+   * An excluded value must not look identical to an included one. The
+   * accent says "in"; this says "out". Kept low in chroma so a row of
+   * excluded chips does not read as an error state.
+   *
+   * Nudged up a step with the new accent. The brand moved from hue 253
+   * to 264, so it leans violet, which closes eleven degrees of the gap
+   * to this rose — and the accent's own chips got a stronger border and
+   * a deeper ink at the same time. Left where it was, an `is not` chip
+   * would have read as the greyer, weaker sibling of an `is` chip rather
+   * than as its opposite. Fill stays under 0.03 for the same reason it
+   * always did.
+   */
+  --negative: oklch(0.947 0.026 22);
+  --negative-ink: oklch(0.475 0.155 22);
+  --negative-border: oklch(0.878 0.055 22);
+
+  /*
+   * ------------------------------------------------------------------
+   * Development stage — a pipeline, not a set of labels
+   * ------------------------------------------------------------------
+   * An analyst reads this ordering constantly, so the colour encodes
+   * position rather than identity. One hue — the accent's — deepening
+   * as the drug advances, which makes maturity scannable straight down
+   * a column without asking anyone to learn a key. Two exits from the
+   * ramp carry their own meaning: green for a drug that arrived, rose
+   * for one that stopped.
+   *
+   *   pre      Discovery, Preclinical          grey — not in the clinic
+   *   early    Phase I
+   *   mid      Phase II
+   *   late     Phase III
+   *   final    Phase IV, Pre-registration      the deepest blue
+   *   live     Approved, Marketed              green
+   *   stopped  Withdrawn, Discontinued, Suspended
+   *   dormant  Archived                        grey, quieter than `pre`
+   *
+   * Chroma stays under 0.06 on every fill. The badges are tints; the
+   * accent proper is solid. They are used within a few pixels of each
+   * other in three of the four directions and must not compete.
+   *
+   * Rebuilt on the brand hue, 264. The sRGB blue gamut is narrower here
+   * than at the old 253 — 0.062 chroma is the ceiling at L 0.874 — so
+   * the four blue rungs carry the same chroma they always did and take
+   * their extra separation from lightness instead: the steps widened
+   * from 0.024/0.028/0.028 to a level 0.030/0.032/0.032. The ramp reads
+   * one notch further apart top to bottom and no louder side to side,
+   * which is the right trade now that a solid accent chip sits nearby at
+   * 0.27.
+   */
+  --stage-pre: oklch(0.966 0.003 264);
+  --stage-pre-ink: oklch(0.535 0.012 264);
+  --stage-pre-edge: oklch(0.918 0.004 264);
+
+  --stage-early: oklch(0.968 0.015 264);
+  --stage-early-ink: oklch(0.485 0.185 264);
+  --stage-early-edge: oklch(0.902 0.044 264);
+
+  --stage-mid: oklch(0.938 0.029 264);
+  --stage-mid-ink: oklch(0.45 0.175 264);
+  --stage-mid-edge: oklch(0.872 0.058 264);
+
+  --stage-late: oklch(0.906 0.043 264);
+  --stage-late-ink: oklch(0.41 0.16 264);
+  --stage-late-edge: oklch(0.842 0.072 264);
+
+  --stage-final: oklch(0.874 0.057 264);
+  --stage-final-ink: oklch(0.37 0.145 264);
+  --stage-final-edge: oklch(0.812 0.086 264);
+
+  --stage-live: oklch(0.905 0.052 158);
+  --stage-live-ink: oklch(0.395 0.09 158);
+  --stage-live-edge: oklch(0.84 0.066 158);
+
+  --stage-stopped: oklch(0.938 0.028 22);
+  --stage-stopped-ink: oklch(0.485 0.15 22);
+  --stage-stopped-edge: oklch(0.878 0.05 22);
+
+  /* Archived. Darkened from L 0.6 while the ramp was open: at the old
+   * value the label sat at 3.6:1 on its own fill, which is quiet on
+   * purpose but under AA for 11px text. 4.6:1 is still the faintest
+   * badge in the set. */
+  --stage-dormant: oklch(0.966 0.003 264);
+  --stage-dormant-ink: oklch(0.54 0.008 264);
+  --stage-dormant-edge: oklch(0.93 0.003 264);
+
+  /* Charts follow the accent rather than a greyscale, so a bar and a
+   * selected chip belong to the same product. */
+  --chart-1: var(--brand);
+  --chart-2: oklch(0.59 0.165 264);
+  --chart-3: oklch(0.7 0.12 264);
+  --chart-4: oklch(0.8 0.08 264);
+  --chart-5: oklch(0.885 0.045 264);
+
+  --radius: 0.625rem;
+
+  --sidebar: var(--surface-chrome);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /*
+   * ------------------------------------------------------------------
+   * Motion
+   * ------------------------------------------------------------------
+   * Lifted from Idea 3's resolve, which is the transition the client
+   * liked. The curve decelerates hard: things arrive rather than slide
+   * in. `lift` is its shorter sibling for a single element settling.
+   * The timings that go with these live in
+   * `src/components/prototype/motion.ts` so TypeScript can stagger
+   * against them.
+   */
+  --ease-settle-curve: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --ease-lift-curve: cubic-bezier(0.32, 0.72, 0.3, 1);
+
+  /* Shadows. A raised surface earns one; a panel on the page does not. */
+  --shadow-panel: 0 1px 2px oklch(0.2 0.02 260 / 0.04);
+  --shadow-raised:
+    0 1px 2px oklch(0.2 0.02 260 / 0.06), 0 8px 24px -6px oklch(0.2 0.02 260 / 0.1);
+  /* A card that has to sit off the page rather than on it: the same shape as
+     `raised`, carried further, for a pane the eye should read as in front. */
+  --shadow-float:
+    0 1px 2px oklch(0.2 0.02 260 / 0.08), 0 12px 32px -8px oklch(0.2 0.02 260 / 0.18);
+}
+
+@keyframes levels {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  /* The two shadows above, as classes, so a panel and a popover cannot
+   * drift apart between directions. */
+  .shadow-panel {
+    box-shadow: var(--shadow-panel);
+  }
+  .shadow-float {
+    box-shadow: var(--shadow-float);
+  }
+  .shadow-raised {
+    box-shadow: var(--shadow-raised);
+  }
+}

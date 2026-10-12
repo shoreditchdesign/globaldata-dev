@@ -1,0 +1,448 @@
+"use client"
+
+import { ChevronRightIcon } from "lucide-react"
+
+import { Checkbox } from "@/components/ui/checkbox"
+import { selectBoxClass } from "@/flow/components/SelectBox"
+import { cn } from "@/lib/utils"
+import * as React from "react"
+
+import {
+  motion,
+  tintClass,
+  usePrefersReducedMotion,
+  useSettle,
+} from "@/components/prototype/motion"
+
+/**
+ * Counts above ten thousand compact so the number lane stays one width. A row
+ * with no number at all — a free-text attribute, which has no value list to
+ * count — shows an em dash; a row with a real zero shows `0`, because zero is
+ * an answer and a dash is not.
+ */
+export function formatCount(n: number) {
+  if (n < 10_000) return n.toLocaleString("en-GB")
+  return `${(n / 1000).toFixed(1)}k`
+}
+
+/** One row of a column: a label, what it would yield, and whether it opens. */
+export interface ColumnRow {
+  label: string
+  /** Rows this label would leave, in the context of the rest of the query. */
+  count: number | null
+  /** True when the row opens a further column rather than only being ticked. */
+  drillable?: boolean
+}
+
+export interface ColumnModel {
+  /** Stable key — also the parent node this column hangs off. */
+  key: string
+  /** What the rows are, e.g. `Attribute`, `Therapy area`, `Indication`. */
+  level: string
+  items: ColumnRow[]
+  /** Values ticked in this column. */
+  selected?: string[]
+  /** Values not ticked themselves but holding ticked values a level down. */
+  holding?: string[]
+  /** The row whose children are open in the column to the right. */
+  open?: string
+  /** Whether rows carry a tick box. Areas and attributes are navigation only. */
+  selectable?: boolean
+  /**
+   * The clause these values tick into is an IS NOT, so a ticked box is the
+   * negation tone with a minus bar rather than a brand tick. The mode is set
+   * in the filter bar; the column only reflects it.
+   */
+  negated?: boolean
+  /** Free-text attributes have no value list, so the column has no rows. */
+  search?: boolean
+  /**
+   * What the number lane counts. The filter areas are whole records, not
+   * drugs. Null leaves the caption's right side bare.
+   */
+  unit?: string | null
+  /** Columns carrying the long labels take a larger share of the panel. */
+  wide?: boolean
+  /**
+   * Bumped to point at this column's first row: Add filter has just opened
+   * the tray, and this is where to click next. See `HintFlash`.
+   */
+  hint?: number
+  /** The row the hint lands on; the first row when not given. */
+  hintLabel?: string
+  /** Wait for the strip's scroll to land before flashing. */
+  hintDelay?: boolean
+}
+
+/** A ticked box in an excluding clause: rose fill and edge, a white minus. */
+const negatedBoxClass = cn(
+  "data-checked:border-negative-ink data-checked:bg-negative-ink data-checked:text-primary-foreground",
+  "data-checked:[&_svg]:hidden data-checked:before:absolute data-checked:before:h-0.5 data-checked:before:w-2 data-checked:before:rounded-full data-checked:before:bg-current",
+)
+
+/** The number lane is sized to the widest count in the column, not globally. */
+function countLane(items: ColumnRow[]) {
+  const longest = items.reduce(
+    (n, item) => Math.max(n, item.count === null ? 1 : formatCount(item.count).length),
+    0,
+  )
+  if (longest <= 3) return "w-8"
+  if (longest <= 5) return "w-12"
+  return "w-14"
+}
+
+/**
+ * Copied from Sprint 3 Idea 2's Miller columns so Idea 1 stays self-contained.
+ *
+ * One level of the drill-down. Rows use fixed-width lanes — lead, label,
+ * count, chevron — and the column header sits on the same lanes, so the
+ * numbers line up down the panel and the headings line up across it.
+ *
+ * Every row in every column reads the same way: control, label, count. The lead
+ * lane holds exactly one thing and is never empty — a tick box where the column
+ * ticks values into the query, a radio mark where it only navigates — so a
+ * number appears once per row, on the right, and never on both sides of a label.
+ *
+ * A value row is two controls in one line: the box ticks the value into the
+ * query, the rest of the row opens what is underneath it. Rows with nothing
+ * underneath tick from anywhere along the row, since there is nothing else
+ * for a click to mean.
+ */
+export function MillerColumn({
+  column,
+  onOpen,
+  onToggle,
+  className,
+  style,
+}: {
+  column: ColumnModel
+  onOpen: (label: string) => void
+  onToggle?: (label: string) => void
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const selected = new Set(column.selected ?? [])
+  const holding = new Set(column.holding ?? [])
+  const lane = countLane(column.items)
+  const hasDrill = column.items.some((item) => item.drillable)
+
+  return (
+    <div
+      className={cn(
+        // A floor on the column width — below it the labels stop being
+        // readable, and the strip scrolls the way Finder's does instead. At
+        // 260px a leaf column has 188px of label lane and a drillable one
+        // 172px, and the rows read at 13px now rather than 16px, so the floor
+        // buys a three-word indication where it used to buy two; the panel is
+        // sized so it is only reached on a window narrower than any desk.
+        "flex min-w-[260px] flex-col",
+        // Every column body is the same grey. The split that used to put the
+        // navigation columns on chrome and the value columns on the panel plane
+        // read as arbitrary from across the screen — some columns grey, some
+        // white, for a reason no one could see — so the white is now the header
+        // block above and the colour is the columns, uniformly: the chrome
+        // surface of the results panel's own head, so the white header rows
+        // and the start page's white header block stand off the bodies.
+        "bg-surface-chrome",
+        column.wide ? "flex-[1.25]" : "flex-1",
+        className,
+      )}
+      style={style}
+    >
+      {/* The caption band is the head of the columns, not the last line of the
+          search block, so it is ruled off on both sides: `border-edge` above it
+          separates it from the breadcrumb and the field, and `border-edge`
+          below closes the white header block off against the column grey.
+          Without the top rule it floated between the two. */}
+      <div
+        className={cn(
+          "bg-surface-panel border-edge flex h-8 shrink-0 items-center gap-1.5 border-y pr-1.5",
+          // On the label's edge: past the tick box where the rows carry one,
+          // at the row's own inset where they only navigate.
+          column.selectable ? "pl-2" : "pl-3.5",
+        )}
+      >
+        {column.selectable ? <span className="w-3 shrink-0" aria-hidden /> : null}
+        {/* One ink for every caption. Which column you are ticking into is said
+            by the tick boxes in it, not by a heading two shades darker than its
+            neighbour's. */}
+        <span className="text-muted-foreground min-w-0 flex-1 truncate text-[10px] font-medium tracking-[0.08em] uppercase">
+          {column.level}
+        </span>
+        {column.search || column.unit === null ? null : (
+          <>
+            <span className="text-muted-foreground shrink-0 text-right text-[10px] font-medium tracking-[0.08em] uppercase">
+              {column.unit ?? "Drugs"}
+            </span>
+            {hasDrill ? <span className="w-4 shrink-0" aria-hidden /> : null}
+          </>
+        )}
+      </div>
+
+      {column.search ? (
+        <p className="text-muted-foreground px-3 py-1 text-xs leading-relaxed">
+          Free text — no value list.
+        </p>
+      ) : (
+        <ul className="min-h-0 flex-1 overflow-y-auto px-1 pt-1 pb-2">
+          {/* Only reachable from the panel search: every column has rows of its
+              own, so an empty list means the query matched none of them. */}
+          {column.items.length === 0 ? (
+            <li className="text-muted-foreground px-2 py-1 text-xs">No matches</li>
+          ) : null}
+          {column.items.map((item, index) => (
+            <ColumnItem
+              hint={
+                (column.hintLabel ? item.label === column.hintLabel : index === 0)
+                  ? column.hint
+                  : undefined
+              }
+              hintDelay={column.hintDelay}
+              key={item.label}
+              item={item}
+              column={column}
+              lane={lane}
+              hasDrill={hasDrill}
+              isSelected={selected.has(item.label)}
+              isHolding={holding.has(item.label)}
+              onOpen={onOpen}
+              onToggle={onToggle}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/**
+ * One row of a column.
+ *
+ * Its own component so it can hold a beat of state: when a value goes from off
+ * to on it lights, then settles. That matters most when the agent is driving —
+ * the columns travel to an attribute and then values start ticking on their
+ * own, and without the flash the only tell that anything happened is a tick box
+ * changing colour four rows down. It is the same beat Idea 3 uses when a phrase
+ * hardens, spent here on a value being taken into the query.
+ *
+ * Nothing about it is load-bearing: the tick box, the count and the label are
+ * all correct the instant the value changes, whether or not the flash is drawn.
+ */
+function ColumnItem({
+  item,
+  column,
+  lane,
+  hasDrill,
+  isSelected,
+  isHolding,
+  hint,
+  hintDelay,
+  onOpen,
+  onToggle,
+}: {
+  hint?: number
+  hintDelay?: boolean
+  item: ColumnRow
+  column: ColumnModel
+  lane: string
+  hasDrill: boolean
+  isSelected: boolean
+  isHolding: boolean
+  onOpen: (label: string) => void
+  onToggle?: (label: string) => void
+}) {
+  const isOpen = column.open === item.label
+  const empty = item.count === 0
+  // With nothing underneath it, the row body has only one job.
+  const bodyTicks = Boolean(column.selectable && onToggle && !item.drillable)
+  // Lit for a beat after this value is taken into the query — never on the way
+  // out, because a value leaving does not need to be found on screen.
+  const justTicked = useSettle(isSelected, motion.hold) && isSelected
+
+  return (
+    <li
+      className={cn(
+        // The transparent edge is carried by every row so that the open row can
+        // colour one in without insetting its lanes a pixel further than its
+        // neighbours' — the count lane has to stay plumb down the column.
+        // Isolated, so a hint flash can sit under the row's text.
+        "relative isolate flex h-8 items-center rounded-md border border-transparent",
+        tintClass,
+        // Hover is grey on every row you can still move to, a ticked one
+        // included — a `hover:` class outranks a flat one, so no row is left
+        // dead under the cursor.
+        !isOpen && "hover:bg-accent",
+        // Ticked into the query, not drilled into: the row carries no fill at
+        // all. The tick box is solid brand the moment it is checked and that
+        // is the whole signal.
+        // Just taken into the query: a grey beat, then it settles. The flash
+        // says *something moved here*, which is a position rather than a state,
+        // so it does not spend the accent.
+        justTicked && !isOpen && "bg-accent",
+        // Drilled into: the washed brand with an edge of its own. The edge is
+        // what the 2px brand rail used to do, and it draws the whole row rather
+        // than one side of it, so the open column reads as open from across the
+        // panel without a second, louder blue on screen.
+        isOpen && "bg-brand-tint border-brand-border",
+      )}
+    >
+      {hint !== undefined ? <HintFlash hint={hint} delay={hintDelay} /> : null}
+      {/* Lead lane: a tick box, where the column ticks values into the query.
+          A navigation row has none: its open state (the washed brand fill and
+          edge) says where the path is, and a radio mark beside it said the
+          same thing again. Never a number — the count lane on the right is
+          the only place a number belongs. */}
+      {column.selectable && onToggle ? (
+        <span className="flex w-5 shrink-0 items-center justify-center">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggle(item.label)}
+            aria-label={`${isSelected ? "Remove" : "Add"} ${item.label}`}
+            className={cn(
+              // 14px, with the tick inside it cut to 12px: the box comes down
+              // with the type it sits beside rather than staying the one thing
+              // in the column still sized for the 16px round.
+              "size-3.5 [&>[data-slot=checkbox-indicator]>svg]:size-3",
+              // White, not the column's grey, so an unticked box reads.
+              "bg-surface-panel",
+              // The grid's darker resting edge, so a box reads at rest here too.
+              selectBoxClass,
+              // A value in an IS NOT clause is being dropped, and it cannot
+              // look like one being kept: the negation tone, with a minus bar
+              // drawn by the box in place of the tick.
+              column.negated && negatedBoxClass,
+            )}
+          />
+        </span>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={() => {
+          if (bodyTicks) onToggle?.(item.label)
+          else if (item.drillable) onOpen(item.label)
+        }}
+        title={item.label}
+        aria-current={isOpen ? "true" : undefined}
+        // `h-full`, not `h-8`: the row owns the 32px now that it carries a
+        // border, and a second fixed 32px inside a 30px content box would
+        // overflow it.
+        className={cn(
+          "flex h-full min-w-0 flex-1 items-center gap-1.5 pr-1.5 text-left",
+          !(column.selectable && onToggle) && "pl-2.5",
+        )}
+      >
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate text-[13px] text-foreground",
+            // Weight is what `selected` means in both kinds of column: in a
+            // value column the value is in the query, in a navigation column
+            // the branch under the row holds values. That second reading is the
+            // job the lead-lane count badge used to do, and weight does it
+            // without putting a second number on the row or spending a colour.
+            (isSelected || isHolding) && "font-medium",
+            // A zero is an answer: this value would leave nothing, so the row
+            // recedes rather than reading as an equal option. It recedes by a
+            // whole named rung, not a fraction of one — the label is where the
+            // zero is read, so it is the label that steps back.
+            empty && !isSelected && "text-muted-foreground",
+          )}
+        >
+          {item.label}
+        </span>
+        {/* Only a folder carries a number — how many options sit inside it —
+            and its arrow. An end value has neither: it is ticked, not opened.
+            In a column that mixes the two, an end value keeps the empty lane
+            so the labels and folder counts stay plumb. */}
+        {item.drillable ? (
+          <span
+            className={cn(
+              "shrink-0 text-right text-xs tabular-nums",
+              lane,
+              // The number is read, not pressed, so it is not the accent's to
+              // spend: an open folder states its count in full ink, and
+              // everything else sits at `muted-foreground`.
+              isSelected ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {item.count === null ? "—" : formatCount(item.count)}
+          </span>
+        ) : hasDrill ? (
+          <span aria-hidden className={cn("shrink-0", lane)} />
+        ) : null}
+        {hasDrill ? (
+          <span className="flex w-4 shrink-0 justify-center">
+            {item.drillable ? (
+              <ChevronRightIcon
+                // Full ink on the row that is open, muted on the rest. Two
+                // named rungs rather than the accent and a fraction of grey.
+                className={cn("size-4", isOpen ? "text-foreground" : "text-muted-foreground")}
+              />
+            ) : null}
+          </span>
+        ) : null}
+      </button>
+    </li>
+  )
+}
+
+/** The last hint played, so a column remounting does not replay an old one. */
+let lastHintPlayed = 0
+
+/**
+ * Where to click next, after Figma's prototype hotspot hint: two quick pulses
+ * of the washed brand, fill and edge, over the row, then gone. Under reduced
+ * motion it shows once, still, and fades. It sits under the row's text and
+ * takes no clicks. Only Add filter and a filter chip's segments bump the hint;
+ * the reader's own clicks in the columns never do.
+ */
+function HintFlash({ hint, delay = false }: { hint: number; delay?: boolean }) {
+  const ref = React.useRef<HTMLSpanElement>(null)
+  const reducedMotion = usePrefersReducedMotion()
+  React.useEffect(() => {
+    const flash = ref.current
+    if (!flash || hint <= lastHintPlayed) return
+    lastHintPlayed = hint
+    // Brought into view in its own column first, if the list has scrolled it
+    // out of sight: a flash nobody can see points at nothing.
+    const row = flash.parentElement
+    const list = row?.closest("ul")
+    if (row && list) {
+      const rowBox = row.getBoundingClientRect()
+      const listBox = list.getBoundingClientRect()
+      if (rowBox.top < listBox.top || rowBox.bottom > listBox.bottom) {
+        list.scrollTo({
+          top: list.scrollTop + rowBox.top - listBox.top - (listBox.height - rowBox.height) / 2,
+          behavior: reducedMotion ? "auto" : "smooth",
+        })
+      }
+    }
+    flash.getAnimations().forEach((animation) => animation.cancel())
+    if (reducedMotion) {
+      flash.animate([{ opacity: 1 }, { opacity: 1, offset: 0.5 }, { opacity: 0 }], {
+        duration: motion.hold,
+        easing: "ease-out",
+      })
+      return
+    }
+    // Two pulses across two reflow beats, about 840ms in all.
+    flash.animate(
+      [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }],
+      {
+        duration: motion.reflow * 2,
+        easing: "ease-in-out",
+        // A chip's hint waits for the columns to finish scrolling to it.
+        delay: delay ? motion.reflow : 0,
+      },
+    )
+  }, [hint, delay, reducedMotion])
+  return (
+    <span
+      ref={ref}
+      aria-hidden
+      // The ring lets the pulse read on a row that is already open,
+      // which carries the same tint and edge at rest.
+      className="bg-brand-tint border-brand-border ring-brand-border pointer-events-none absolute -inset-px -z-10 rounded-md border opacity-0 ring-2"
+    />
+  )
+}
